@@ -72,7 +72,7 @@ public final class JVMUtil {
         static {
             try {
                 CL_NATIVE_LIBRARY = Class.forName("java.lang.ClassLoader$NativeLibrary", true, null);
-                CNSTR_NATIVE_LIBRARY = LOOKUP.findConstructor(Class.forName("java.lang.ClassLoader$NativeLibrary"), MethodType.methodType(Void.TYPE, Class.class, String.class, Boolean.TYPE));
+                CNSTR_NATIVE_LIBRARY = LOOKUP.findConstructor(CL_NATIVE_LIBRARY, MethodType.methodType(Void.TYPE, Class.class, String.class, Boolean.TYPE));
             } catch (Throwable t) {
                 throw new ExceptionInInitializerError(t);
             }

@@ -56,7 +56,7 @@ public final class JVMUtil {
             field = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
             LOOKUP = (MethodHandles.Lookup) unsafe.getObject(unsafe.staticFieldBase(field),
                     unsafe.staticFieldOffset(field));
-            NATIVE_LIBRARY_LOADER = Float.parseFloat(System.getProperty("java.class.version")) - 44 > 8 ? null : new Java8LibraryLoader();
+            NATIVE_LIBRARY_LOADER = Float.parseFloat(System.getProperty("java.class.version")) - 44 > 8 ? new Java9LibraryLoader() : new Java8LibraryLoader();
         } catch (Throwable t) {
             throw new ExceptionInInitializerError(t);
         }
@@ -109,6 +109,40 @@ public final class JVMUtil {
                 MH_NATIVE_LOAD = lookup.findVirtual(cl, "load", MethodType.methodType(Void.TYPE, String.class, Boolean.TYPE));
                 MH_NATIVE_FIND = lookup.findVirtual(cl, "find", MethodType.methodType(Long.TYPE, String.class));
                 MH_NATIVE_LOADED_SET = lookup.findSetter(cl, "loaded", Boolean.TYPE);
+            } catch (Throwable t) {
+                throw new ExceptionInInitializerError(t);
+            }
+
+        }
+    }
+
+    private static class Java9LibraryLoader extends NativeLibraryLoader {
+
+        private static final MethodHandle MH_NATIVE_LOAD;
+        private static final MethodHandle MH_NATIVE_FIND;
+
+        @Override
+        NativeLibrary loadLibrary(String path) throws Throwable {
+            Object library = CNSTR_NATIVE_LIBRARY.invoke(JVMUtil.class, path, false);
+            MH_NATIVE_LOAD.invoke(library, path, false);
+            return new NativeLibrary() {
+                @Override
+                public long findEntry(String entry) {
+                    try {
+                        return (long) MH_NATIVE_FIND.invoke(library, entry);
+                    } catch (Throwable t) {
+                        throw new InternalError(t);
+                    }
+                }
+            };
+        }
+
+        static {
+            MethodHandles.Lookup lookup = LOOKUP;
+            Class<?> cl = CL_NATIVE_LIBRARY;
+            try {
+                MH_NATIVE_LOAD = lookup.findVirtual(cl, "load0", MethodType.methodType(Boolean.TYPE, String.class, Boolean.TYPE));
+                MH_NATIVE_FIND = lookup.findVirtual(cl, "findEntry", MethodType.methodType(Long.TYPE, String.class));
             } catch (Throwable t) {
                 throw new ExceptionInInitializerError(t);
             }

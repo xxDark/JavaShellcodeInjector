@@ -4,7 +4,7 @@ import one.helfy.JVM;
 import one.helfy.Type;
 import sun.misc.Unsafe;
 
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public final class ShellcodeRunner {
 
@@ -33,7 +33,6 @@ public final class ShellcodeRunner {
         Type constMethodType = jvm.type("ConstMethod");
         Type constantPoolType = jvm.type("ConstantPool");
         long constantPoolOffset = constMethodType.offset("_constants");
-        long codeSizeOffset = constMethodType.offset("_code_size");
         long nameIndexOffset = constMethodType.offset("_name_index");
         long signatureIndexOffset = constMethodType.offset("_signature_index");
         long _from_compiled_entry = jvm.type("Method").offset("_from_compiled_entry");
@@ -70,6 +69,6 @@ public final class ShellcodeRunner {
         for (int i = 0; i < length; i++) {
             b[i] = jvm.getByte(body + i);
         }
-        return new String(b, Charset.forName("UTF-8"));
+        return new String(b, StandardCharsets.UTF_8);
     }
 }

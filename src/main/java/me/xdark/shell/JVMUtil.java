@@ -24,7 +24,7 @@ public final class JVMUtil {
         Path jvmDir = Paths.get(System.getProperty("java.home"));
         Path maybeJre = jvmDir.resolve("jre");
         if (Files.isDirectory(maybeJre)) {
-            jvmDir = jvmDir.resolve(maybeJre);
+            jvmDir = maybeJre;
         }
         jvmDir = jvmDir.resolve("bin");
         String os = System.getProperty("os.name").toLowerCase();
